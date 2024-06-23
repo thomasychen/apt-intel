@@ -9,6 +9,7 @@ function App() {
   return (
     <Router>
       <Navbar />
+      <Home />
       <Container>
         <Routes>
           <Route path="/" exact component={Home} />

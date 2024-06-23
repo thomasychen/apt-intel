@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
-import { AppBar, Toolbar, Typography, FormControl, InputLabel, Select, MenuItem, Slider, Checkbox, FormControlLabel, Box, OutlinedInput, Button, Menu, TextField } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
+import axios from 'axios';
+import {
+  AppBar, Toolbar, Typography, Box, FormControl, InputLabel, Select, MenuItem,
+  Button, Menu, Slider, TextField, FormControlLabel, Checkbox
+} from '@mui/material';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 const Navbar = () => {
   const [location, setLocation] = useState('');
   const [beds, setBeds] = useState([0, 5]);
   const [baths, setBaths] = useState([0, 5]);
-  const [minCost, setMinCost] = useState('');
-  const [maxCost, setMaxCost] = useState('');
+  const [minCost, setMinCost] = useState(0);
+  const [maxCost, setMaxCost] = useState(100000);
   const [furnished, setFurnished] = useState(false);
   const [apartmentType, setApartmentType] = useState('');
   const [bedBathAnchorEl, setBedBathAnchorEl] = useState(null);
@@ -58,6 +61,27 @@ const Navbar = () => {
     setCostAnchorEl(null);
   };
 
+  const handleUpdateSearch = async () => {
+    try {
+      const response = await axios.get('http://localhost:8080/apartments', {
+        params: {
+          bed_min: beds[0],
+          bed_max: beds[1],
+          bath_min: baths[0],
+          bath_max: baths[1],
+          cost_min: minCost,
+          cost_max: maxCost,
+          city: location,
+          furnished: furnished,
+          shared: apartmentType,
+        }
+      });
+      console.log(response.data);
+    } catch (error) {
+      console.error('Error fetching apartments:', error);
+    }
+  };
+
   return (
     <AppBar position="static" sx={{ backgroundColor: 'white', boxShadow: 'none', borderBottom: '1px solid #e0e0e0' }}>
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -68,9 +92,9 @@ const Navbar = () => {
           <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
             <InputLabel>Location</InputLabel>
             <Select value={location} onChange={handleLocationChange} label="Location">
-              <MenuItem value="location1">Berkeley, California</MenuItem>
-              <MenuItem value="location2">Location 2</MenuItem>
-              <MenuItem value="location3">Location 3</MenuItem>
+              <MenuItem value="Berkeley, California">Berkeley, California</MenuItem>
+              <MenuItem value="Location 2">Location 2</MenuItem>
+              <MenuItem value="Location 3">Location 3</MenuItem>
             </Select>
           </FormControl>
           <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
@@ -84,34 +108,34 @@ const Navbar = () => {
               Beds & Baths
             </Button>
             <Menu
-            id="bed-bath-menu"
-            anchorEl={bedBathAnchorEl}
-            keepMounted
-            open={Boolean(bedBathAnchorEl)}
-            onClose={handleBedBathClose}
-            PaperProps={{ style: { padding: '25px' } }}
-          >
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Typography variant="caption" sx={{ marginBottom: 1 }}>Beds</Typography>
-              <Slider
-                value={beds}
-                onChange={handleBedsChange}
-                valueLabelDisplay="auto"
-                min={0}
-                max={5}
-                sx={{ width: 200 }}
-              />
-              <Typography variant="caption" sx={{ marginTop: 2, marginBottom: 1 }}>Baths</Typography>
-              <Slider
-                value={baths}
-                onChange={handleBathsChange}
-                valueLabelDisplay="auto"
-                min={0}
-                max={5}
-                sx={{ width: 200 }}
-              />
-            </Box>
-          </Menu>
+              id="bed-bath-menu"
+              anchorEl={bedBathAnchorEl}
+              keepMounted
+              open={Boolean(bedBathAnchorEl)}
+              onClose={handleBedBathClose}
+              PaperProps={{ style: { padding: '25px' } }}
+            >
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Typography variant="caption" sx={{ marginBottom: 1 }}>Beds</Typography>
+                <Slider
+                  value={beds}
+                  onChange={handleBedsChange}
+                  valueLabelDisplay="auto"
+                  min={0}
+                  max={5}
+                  sx={{ width: 200 }}
+                />
+                <Typography variant="caption" sx={{ marginTop: 2, marginBottom: 1 }}>Baths</Typography>
+                <Slider
+                  value={baths}
+                  onChange={handleBathsChange}
+                  valueLabelDisplay="auto"
+                  min={0}
+                  max={5}
+                  sx={{ width: 200 }}
+                />
+              </Box>
+            </Menu>
           </FormControl>
           <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
             <Button
@@ -161,7 +185,9 @@ const Navbar = () => {
             label="Furnished"
             sx={{ color: 'black', marginLeft: 0 }}
           />
-          <Button variant="contained" sx={{ backgroundColor: '#007BFF', textTransform: 'none' }}>Update Search</Button>
+          <Button variant="contained" sx={{ backgroundColor: '#007BFF', textTransform: 'none' }} onClick={handleUpdateSearch}>
+            Update Search
+          </Button>
         </Box>
       </Toolbar>
     </AppBar>
