@@ -1,8 +1,6 @@
 import json
 from haralyzer import HarParser, HarPage
-
-with open('../raw_data/berkeley-test-1.har', 'r', encoding='utf-8') as f:
-     har_parser = HarParser(json.loads(f.read()))
+from MistralAi import extract_features
 
 def filter_entries(entries):
     filtered_entries = []
@@ -16,35 +14,52 @@ def filter_entries(entries):
                     break
     return filtered_entries
 
-data = har_parser.har_data
+def har_processing_logic(files):
+    posts = []
+    for file in files: 
+        with open(file, 'r', encoding='utf-8') as f:
+            har_parser = HarParser(json.loads(f.read()))
 
-posts = []
+            data = har_parser.har_data
 
-for entry in filter_entries(data["entries"]):
-    try:
-        data = json.loads(entry["response"]["content"]["text"].splitlines()[0])
-        if "data" in data:
-            group_feed = data['data']['node']['group_feed']['edges']
-            for post in group_feed:
-                post_metadata = post["node"]
-                post_data = post_metadata["comet_sections"]["content"]["story"]
-                user = post_data['actors'][0]['name']
-                post_id = post_metadata['post_id']
-                post_link = post_data['wwwURL']
-                post_text = post_data['message']['text']
-                image_urls = [media['media']['image']['uri'] for media in post_data['attachments'][0]['styles']['attachment']['all_subattachments']['nodes']]
+            for entry in filter_entries(data["entries"]):
+                try:
+                    data = json.loads(entry["response"]["content"]["text"].splitlines()[0])
+                    if "data" in data:
+                        group_feed = data['data']['node']['group_feed']['edges']
+                        for post in group_feed:
+                            post_metadata = post["node"]
+                            post_data = post_metadata["comet_sections"]["content"]["story"]
+                            user = post_data['actors'][0]['name']
+                            post_id = post_metadata['post_id']
+                            post_link = post_data['wwwURL']
+                            post_text = post_data['message']['text']
+                            image_urls = [media['media']['image']['uri'] for media in post_data['attachments'][0]['styles']['attachment']['all_subattachments']['nodes']]
 
-                posts.append({
-                    'user': user,
-                    'post_id': post_id,
-                    'post_link': post_link,
-                    'post_text': post_text,
-                    'image_urls': image_urls
-                })
-    except:
-        pass
+                            posts.append({
+                                'user': user,
+                                'post_id': post_id,
+                                'post_link': post_link,
+                                'post_text': post_text,
+                                'image_urls': image_urls
+                            })
+                except:
+                    pass
+    for post in posts: 
+        post_text = json.dumps(post)
+        new_text = extract_features(post_text)
+        features = json.loads(new_text)
+        if "error" in features: 
+            print(features["error"])
+        else:
+            print(features)
+        
+        
 
-print(posts)
+
+har_processing_logic(["../raw_data/berkeley-test-0.har"])
+        
+    
 
 
 
