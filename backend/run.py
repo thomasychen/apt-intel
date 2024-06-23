@@ -1,6 +1,9 @@
 import json
 from haralyzer import HarParser, HarPage
 from MistralAi import extract_features
+from sqlalchemy import insert
+import logging
+from server import Apartment, get_session
 
 def filter_entries(entries):
     filtered_entries = []
@@ -50,14 +53,25 @@ def har_processing_logic(files):
         new_text = extract_features(post_text)
         features = json.loads(new_text)
         if "error" in features: 
-            print(features["error"])
+            logging.info(features["error"])
         else:
-            print(features)
-        
-        
+            features["id"] = post["post_id"]
+            features["image_urls"] = json.dumps(post["image_urls"])
+            write_to_db(features)
 
 
-har_processing_logic(["../raw_data/berkeley-test-0.har"])
+
+def write_to_db(features):
+    session = get_session()
+    new_apt = Apartment(id = features['id'], bed = features['bed'], bath = features['bath'], cost = features['cost'], description = features['description'], \
+                        city = features['city'], state = features['state'], end_date = features['end_date'], start_date = features['start_date'], address = features['address'], sqft = features['sqft'], \
+                        phone = features['phone'], email = features['email'], url = features['url'], gender = features['gender'], shared = features['shared'], \
+                        furnished = features['furnished'], pets = features['pets'], parking = features['parking'], laundry = features['laundry'], image_urls = features['image_urls'])
+    session.add(new_apt)
+    session.commit()
+
+
+har_processing_logic(["raw_data/berkeley-test-0.har"])
         
     
 

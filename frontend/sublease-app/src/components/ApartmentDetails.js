@@ -17,8 +17,8 @@ const ApartmentDetails = () => {
 
   return (
     <Container sx={{ mt: 2 }}>
-      <Typography variant="h4">{apartment.title}</Typography>
-      <img src={apartment.image} alt={apartment.title} style={{ width: '100%', height: 'auto', marginTop: '16px' }} />
+      <Typography variant="h4">HI</Typography>
+      <img src={apartment.image_urls[0]} alt="HI" style={{ width: '100%', height: 'auto', marginTop: '16px' }} />
       <Typography variant="h6" sx={{ mt: 2 }}>Description</Typography>
       <Typography>{apartment.description}</Typography>
       {/* Add more details as needed */}

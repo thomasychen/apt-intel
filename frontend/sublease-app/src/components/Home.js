@@ -10,6 +10,7 @@ const Home = () => {
       .then(response => response.json())
       .then(data => setApartments(data))
       .catch(error => console.error('Error fetching data:', error));
+      console.log(apartments);
   }, []);
 
   return (
@@ -21,7 +22,7 @@ const Home = () => {
               <CardMedia
                 component="img"
                 height="140"
-                image={apt.image}
+                image={apt.image_urls[0]}
               />
               <CardContent>
                 <Typography variant="body2" color="text.secondary">

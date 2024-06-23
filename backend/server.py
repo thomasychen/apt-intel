@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 from sqlalchemy import create_engine, Column, Integer, String, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
+import json
 
 app = Flask(__name__)
 
@@ -13,14 +14,15 @@ Base = declarative_base()
 
 class Apartment(Base):
     __tablename__ = 'apartments'
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True)
     bed = Column(Integer, nullable=False)
     bath = Column(Integer, nullable=False)
     cost = Column(Integer, nullable=False)
     description = Column(Text, nullable=False)
     city = Column(String(255), nullable=False)
     state = Column(String(255), nullable=False)
-    date = Column(String(255), nullable=False)
+    start_date = Column(String(255), nullable=False)
+    end_date = Column(String(255), nullable=False)
     address = Column(String(255))
     sqft = Column(Integer)
     phone = Column(String(255))
@@ -32,10 +34,14 @@ class Apartment(Base):
     pets = Column(Integer)
     parking = Column(Integer)
     laundry = Column(Integer)
+    image_urls = Column(Text)
 
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 session = scoped_session(Session)\
+
+def get_session():
+    return session()
 
 @app.route("/ping", methods=['GET'])
 def ping(): 
@@ -65,8 +71,10 @@ def get_apartments():
         query = query.filter(Apartment.city == request.args['city'])
     if 'state' in request.args:
         query = query.filter(Apartment.state == request.args['state'])
-    if 'date' in request.args:
-        query = query.filter(Apartment.date == request.args['date'])
+    if 'start_date' in request.args:
+        query = query.filter(Apartment.date <= request.args['start_date'])
+    if 'end_date' in request.args:
+        query = query.filter(Apartment.date >= request.args['end_date'])
     if 'address' in request.args:
         query = query.filter(Apartment.address.like(f"%{request.args['address']}%"))
     if 'sqft_min' in request.args:
@@ -103,7 +111,8 @@ def get_apartments():
             "description": apt.description,
             "city": apt.city,
             "state": apt.state,
-            "date": apt.date,
+            "start_date": apt.start_date,
+            "end_date": apt.end_date,
             "address": apt.address,
             "sqft": apt.sqft,
             "phone": apt.phone,
@@ -114,7 +123,8 @@ def get_apartments():
             "furnished": apt.furnished,
             "pets": apt.pets,
             "parking": apt.parking,
-            "laundry": apt.laundry
+            "laundry": apt.laundry,
+            "image_urls": json.loads(apt.image_urls)
         }
         for apt in apartments
     ]
