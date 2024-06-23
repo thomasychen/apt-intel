@@ -68,32 +68,31 @@ const Navbar = () => {
           <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
             <InputLabel>Location</InputLabel>
             <Select value={location} onChange={handleLocationChange} label="Location">
-              <MenuItem value=""><em>None</em></MenuItem>
-              <MenuItem value="location1">Location 1</MenuItem>
+              <MenuItem value="location1">Berkeley, California</MenuItem>
               <MenuItem value="location2">Location 2</MenuItem>
               <MenuItem value="location3">Location 3</MenuItem>
             </Select>
           </FormControl>
           <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>Beds & Baths</InputLabel>
             <Button
               aria-controls="bed-bath-menu"
               aria-haspopup="true"
               onClick={handleBedBathClick}
               endIcon={<ArrowDropDownIcon />}
-              sx={{ textTransform: 'none', border: '1px solid #e0e0e0', borderRadius: 1, minWidth: 120 }}
+              sx={{ textTransform: 'none', color: 'black', border: '1px solid #e0e0e0', borderRadius: 1, minWidth: 120 }}
             >
               Beds & Baths
             </Button>
             <Menu
-              id="bed-bath-menu"
-              anchorEl={bedBathAnchorEl}
-              keepMounted
-              open={Boolean(bedBathAnchorEl)}
-              onClose={handleBedBathClose}
-              PaperProps={{ style: { padding: '10px' } }}
-            >
-              <Typography variant="caption">Beds</Typography>
+            id="bed-bath-menu"
+            anchorEl={bedBathAnchorEl}
+            keepMounted
+            open={Boolean(bedBathAnchorEl)}
+            onClose={handleBedBathClose}
+            PaperProps={{ style: { padding: '25px' } }}
+          >
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Typography variant="caption" sx={{ marginBottom: 1 }}>Beds</Typography>
               <Slider
                 value={beds}
                 onChange={handleBedsChange}
@@ -102,7 +101,7 @@ const Navbar = () => {
                 max={5}
                 sx={{ width: 200 }}
               />
-              <Typography variant="caption">Baths</Typography>
+              <Typography variant="caption" sx={{ marginTop: 2, marginBottom: 1 }}>Baths</Typography>
               <Slider
                 value={baths}
                 onChange={handleBathsChange}
@@ -111,16 +110,16 @@ const Navbar = () => {
                 max={5}
                 sx={{ width: 200 }}
               />
-            </Menu>
+            </Box>
+          </Menu>
           </FormControl>
           <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>Cost</InputLabel>
             <Button
               aria-controls="cost-menu"
               aria-haspopup="true"
               onClick={handleCostClick}
               endIcon={<ArrowDropDownIcon />}
-              sx={{ textTransform: 'none', border: '1px solid #e0e0e0', borderRadius: 1, minWidth: 120 }}
+              sx={{ textTransform: 'none', color: 'rgba(0,0,0,0.87)', border: '1px solid #e0e0e0', borderRadius: 1, minWidth: 120 }}
             >
               Cost
             </Button>
@@ -160,9 +159,9 @@ const Navbar = () => {
           <FormControlLabel
             control={<Checkbox checked={furnished} onChange={handleFurnishedChange} />}
             label="Furnished"
-            sx={{ marginLeft: 0 }}
+            sx={{ color: 'black', marginLeft: 0 }}
           />
-          <Button variant="contained" sx={{ backgroundColor: '#007BFF', textTransform: 'none' }}>Save Search</Button>
+          <Button variant="contained" sx={{ backgroundColor: '#007BFF', textTransform: 'none' }}>Update Search</Button>
         </Box>
       </Toolbar>
     </AppBar>
