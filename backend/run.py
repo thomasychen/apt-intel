@@ -4,6 +4,7 @@ from MistralAi import extract_features
 from sqlalchemy import insert
 import logging
 from server import Apartment, get_session
+import datetime
 
 def filter_entries(entries):
     filtered_entries = []
@@ -49,29 +50,67 @@ def har_processing_logic(files):
                 except:
                     pass
     for post in posts: 
-        post_text = json.dumps(post)
-        new_text = extract_features(post_text)
-        features = json.loads(new_text)
-        if "error" in features: 
-            logging.info(features["error"])
-        else:
-            features["id"] = post["post_id"]
-            features["image_urls"] = json.dumps(post["image_urls"])
-            write_to_db(features)
+        valid = False
+        retries = 0
+        error_details = None
+        while not valid and retries < 3:
+            try:
+                post_text = json.dumps(post)
+                new_text = extract_features(post_text, error_details)
+                features = json.loads(new_text)
+                if "error" in features: 
+                    logging.info(features["error"])
+                else:
+                    features["id"] = post["post_id"]
+                    features["image_urls"] = json.dumps(post["image_urls"])
+                    write_to_db(features)
+                valid = True
+            except Exception as e:
+                error_details = str(e)
+                retries += 1
 
 
 
 def write_to_db(features):
     session = get_session()
-    new_apt = Apartment(id = features['id'], bed = features['bed'], bath = features['bath'], cost = features['cost'], description = features['description'], \
-                        city = features['city'], state = features['state'], end_date = features['end_date'], start_date = features['start_date'], address = features['address'], sqft = features['sqft'], \
-                        phone = features['phone'], email = features['email'], url = features['url'], gender = features['gender'], shared = features['shared'], \
-                        furnished = features['furnished'], pets = features['pets'], parking = features['parking'], laundry = features['laundry'], image_urls = features['image_urls'])
-    session.add(new_apt)
-    session.commit()
+    
+    # Check if the apartment with the given id already exists
+    existing_apt = session.query(Apartment).filter_by(id=features['id']).first()
+    
+    if existing_apt is None:
+        new_apt = Apartment(
+            id=features['id'], 
+            bed=features['bed'], 
+            bath=features['bath'], 
+            cost=features['cost'], 
+            description=features['description'], 
+            city=features['city'], 
+            state=features['state'], 
+            end_date=datetime.datetime.strptime(features['end_date'], '%Y-%m-%d'), 
+            start_date=datetime.datetime.strptime(features['start_date'], '%Y-%m-%d'), 
+            address=features['address'], 
+            sqft=features['sqft'], 
+            phone=features['phone'], 
+            email=features['email'], 
+            url=features['url'], 
+            gender=features['gender'], 
+            shared=features['shared'], 
+            furnished=features['furnished'], 
+            pets=features['pets'], 
+            parking=features['parking'], 
+            laundry=features['laundry'], 
+            image_urls=features['image_urls']
+        )
+        session.add(new_apt)
+        session.commit()
+    else:
+        logging.info(f"Apartment with id {features['id']} already exists in the database.")
+    
+    session.close()
 
 
-har_processing_logic(["raw_data/berkeley-test-0.har"])
+
+har_processing_logic(["raw_data/berkeley-test-2.har"])
         
     
 

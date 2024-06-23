@@ -1,10 +1,11 @@
 from flask import Flask, jsonify, request
-from sqlalchemy import create_engine, Column, Integer, String, Text
+from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
 import json
-
+from flask_cors import CORS
 app = Flask(__name__)
+CORS(app)
 
 DATABASE_URL = "sqlite:///../db/apartments.db"
 
@@ -21,8 +22,8 @@ class Apartment(Base):
     description = Column(Text, nullable=False)
     city = Column(String(255), nullable=False)
     state = Column(String(255), nullable=False)
-    start_date = Column(String(255), nullable=False)
-    end_date = Column(String(255), nullable=False)
+    start_date = Column(DateTime, nullable=False)
+    end_date = Column(DateTime, nullable=False)
     address = Column(String(255))
     sqft = Column(Integer)
     phone = Column(String(255))
@@ -50,26 +51,27 @@ def ping():
 @app.route("/apartments", methods=['GET'])
 def get_apartments():
     query = session.query(Apartment)
+    print(request.args)
     
     if 'id' in request.args:
-        query = query.filter(Apartment.id == request.args['id'])
+        query = query.filter(Apartment.id == int(request.args['id']))
     if 'bed_min' in request.args:
-        query = query.filter(Apartment.bed >= request.args['bed_min'])
+        query = query.filter(Apartment.bed >= int(request.args['bed_min']))
     if 'bed_max' in request.args:
-        query = query.filter(Apartment.bed <= request.args['bed_max'])
+        query = query.filter(Apartment.bed <= int(request.args['bed_max']))
     if 'bath_min' in request.args:
-        query = query.filter(Apartment.bath >= request.args['bath_min'])
+        query = query.filter(Apartment.bath >= int(request.args['bath_min']))
     if 'bath_max' in request.args:
-        query = query.filter(Apartment.bath <= request.args['bath_max'])
+        query = query.filter(Apartment.bath <= int(request.args['bath_max']))
     if 'cost_min' in request.args:
-        query = query.filter(Apartment.cost >= request.args['cost_min'])
+        query = query.filter(Apartment.cost >= int(request.args['cost_min']))
     if 'cost_max' in request.args:
-        query = query.filter(Apartment.cost <= request.args['cost_max'])
+        query = query.filter(Apartment.cost <= int(request.args['cost_max']))
     if 'description' in request.args:
         query = query.filter(Apartment.description.like(f"%{request.args['description']}%"))
-    if 'city' in request.args:
+    if 'city' in request.args and request.args["city"]:
         query = query.filter(Apartment.city == request.args['city'])
-    if 'state' in request.args:
+    if 'state' in request.args and request.args['state']:
         query = query.filter(Apartment.state == request.args['state'])
     if 'start_date' in request.args:
         query = query.filter(Apartment.date <= request.args['start_date'])
@@ -89,10 +91,18 @@ def get_apartments():
         query = query.filter(Apartment.url == request.args['url'])
     if 'gender' in request.args:
         query = query.filter(Apartment.gender == request.args['gender'])
-    if 'shared' in request.args:
-        query = query.filter(Apartment.shared == request.args['shared'])
+    if 'shared' in request.args and request.args["shared"]:
+        if request.args["shared"] == "single":
+            val = 0
+        else:
+            val = 1
+        query = query.filter(Apartment.shared == val)
     if 'furnished' in request.args:
-        query = query.filter(Apartment.furnished == request.args['furnished'])
+        if request.args["furnished"] == "true":
+            val = 1
+        else:
+            val = 0
+        query = query.filter(Apartment.furnished == val)
     if 'pets' in request.args:
         query = query.filter(Apartment.pets == request.args['pets'])
     if 'parking' in request.args:
