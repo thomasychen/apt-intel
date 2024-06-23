@@ -1,6 +1,6 @@
-DROP TABLE IF EXISTS Apartments;
+DROP TABLE IF EXISTS apartments;
 
-CREATE TABLE Apartments (
+CREATE TABLE apartments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     bed INT NOT NULL,
     bath INT NOT NULL,
