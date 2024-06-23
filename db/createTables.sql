@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS apartments;
 CREATE TABLE apartments (
     id INTEGER PRIMARY KEY,
+    group_id INT NOT NULL,
     bed INT NOT NULL,
     bath INT NOT NULL,
     cost INT NOT NULL,

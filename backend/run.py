@@ -31,6 +31,7 @@ def har_processing_logic(files):
                     data = json.loads(entry["response"]["content"]["text"].splitlines()[0])
                     if "data" in data:
                         group_feed = data['data']['node']['group_feed']['edges']
+                        group_id = data['data']['node']['id']
                         for post in group_feed:
                             post_metadata = post["node"]
                             post_data = post_metadata["comet_sections"]["content"]["story"]
@@ -53,7 +54,8 @@ def har_processing_logic(files):
                                 'image_urls': image_urls,
                                 'post_date': date_str,
                                 'group_city':city,
-                                'group_state':state
+                                'group_state':state,
+                                'group_id': group_id,
                             })
                 except:
                     pass
@@ -73,7 +75,8 @@ def har_processing_logic(files):
                     features["image_urls"] = json.dumps(post["image_urls"])
                     features["city"] = post['group_city']
                     features["state"] = post['group_state']
-                    print(features)
+                    features['group_id'] = post['group_id']
+                    features['url'] = f"https://facebook.com/groups/{features['group_id']}/permalink/{features['id']}/"
                     write_to_db(features)
                 valid = True
             except Exception as e:
@@ -110,7 +113,8 @@ def write_to_db(features):
             pets=features['pets'], 
             parking=features['parking'], 
             laundry=features['laundry'], 
-            image_urls=features['image_urls']
+            image_urls=features['image_urls'],
+            group_id=features['group_id']
         )
         session.add(new_apt)
         session.commit()

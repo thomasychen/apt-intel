@@ -17,6 +17,7 @@ Base = declarative_base()
 class Apartment(Base):
     __tablename__ = 'apartments'
     id = Column(Integer, primary_key=True)
+    group_id = Column(Integer, nullable=False)
     bed = Column(Integer, nullable=False)
     bath = Column(Integer, nullable=False)
     cost = Column(Integer, nullable=False)
