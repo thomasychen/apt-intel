@@ -1,20 +1,22 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './components/Home';
 import ApartmentDetails from './components/ApartmentDetails';
-import { Container } from '@mui/material';
+import Container from '@mui/material/Container';
+import { FilterProvider } from './contexts/FilterContext';
 
 function App() {
   return (
+    <FilterProvider>
     <Router>
-      <Home />
       <Container>
         <Routes>
-          <Route path="/" exact component={Home} />
-          <Route path="/details/:id" component={ApartmentDetails} />
+          <Route path="/" element={<Home />} />
+          <Route path="/details/:id" element={<ApartmentDetails />} />
         </Routes>
       </Container>
     </Router>
+    </FilterProvider>
   );
 }
 

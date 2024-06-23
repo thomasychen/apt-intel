@@ -18,8 +18,8 @@ def extract_features(text, error_msg, default_city="Berkeley"):
     description TEXT NOT NULL,\
     city VARCHAR(255) NOT NULL (infer based on context, otherwise {default_city}),\
     state VARCHAR(255) NOT NULL (full state name with capital first letters, use city for context),\
-    start_date VARCHAR(255) NOT NULL (YYYY-MM-DD estimate using context of description if not clear),\
-    end_date VARCHAR(255) NOT NULL (YYYY-MM-DD estimate using context of description if not clear), \
+    start_date VARCHAR(255) NOT NULL (YYYY-MM-DD estimate using context of post_text + post_date if not clear),\
+    end_date VARCHAR(255) NOT NULL (YYYY-MM-DD estimate using context of post_text + post_date if not clear), \
     address VARCHAR(255),\
     sqft INT,\
     phone VARCHAR(255),\

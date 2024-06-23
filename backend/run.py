@@ -20,7 +20,7 @@ def filter_entries(entries):
 
 def har_processing_logic(files):
     posts = []
-    for file in files: 
+    for file, city, state in files: 
         with open(file, 'r', encoding='utf-8') as f:
             har_parser = HarParser(json.loads(f.read()))
 
@@ -39,13 +39,21 @@ def har_processing_logic(files):
                             post_link = post_data['wwwURL']
                             post_text = post_data['message']['text']
                             image_urls = [media['media']['image']['uri'] for media in post_data['attachments'][0]['styles']['attachment']['all_subattachments']['nodes']]
+                            timestamp = post_metadata["comet_sections"]["context_layout"]["story"]["comet_sections"]["metadata"][0]["story"]["creation_time"]
+                            # Convert the timestamp to a datetime object
+                            dt_object = datetime.datetime.fromtimestamp(timestamp)
+                            # Format the datetime object to a string in the format YYYY-MM-DD
+                            date_str = dt_object.strftime('%Y-%m-%d')
 
                             posts.append({
                                 'user': user,
                                 'post_id': post_id,
                                 'post_link': post_link,
                                 'post_text': post_text,
-                                'image_urls': image_urls
+                                'image_urls': image_urls,
+                                'post_date': date_str,
+                                'group_city':city,
+                                'group_state':state
                             })
                 except:
                     pass
@@ -56,13 +64,16 @@ def har_processing_logic(files):
         while not valid and retries < 3:
             try:
                 post_text = json.dumps(post)
-                new_text = extract_features(post_text, error_details)
+                new_text = extract_features(post_text, error_details, city)
                 features = json.loads(new_text)
                 if "error" in features: 
                     logging.info(features["error"])
                 else:
                     features["id"] = post["post_id"]
                     features["image_urls"] = json.dumps(post["image_urls"])
+                    features["city"] = post['group_city']
+                    features["state"] = post['group_state']
+                    print(features)
                     write_to_db(features)
                 valid = True
             except Exception as e:
@@ -110,7 +121,7 @@ def write_to_db(features):
 
 
 
-har_processing_logic(["raw_data/berkeley-test-2.har"])
+har_processing_logic([("raw_data/berkeley-test-2.har", "Berkeley", "California"), ("raw_data/uw.har", "Seattle", "Washington")])
         
     
 

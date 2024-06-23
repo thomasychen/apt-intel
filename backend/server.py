@@ -4,6 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
 import json
 from flask_cors import CORS
+import datetime
 app = Flask(__name__)
 CORS(app)
 
@@ -73,10 +74,10 @@ def get_apartments():
         query = query.filter(Apartment.city == request.args['city'])
     if 'state' in request.args and request.args['state']:
         query = query.filter(Apartment.state == request.args['state'])
-    if 'start_date' in request.args:
-        query = query.filter(Apartment.date <= request.args['start_date'])
-    if 'end_date' in request.args:
-        query = query.filter(Apartment.date >= request.args['end_date'])
+    if 'start_date' in request.args and request.args['start_date']:
+        query = query.filter(Apartment.start_date <= datetime.datetime.strptime(request.args['start_date'], '%Y-%m-%d'))
+    if 'end_date' in request.args and request.args['end_date']:
+        query = query.filter(Apartment.end_date >= datetime.datetime.strptime(request.args['end_date'], '%Y-%m-%d'))
     if 'address' in request.args:
         query = query.filter(Apartment.address.like(f"%{request.args['address']}%"))
     if 'sqft_min' in request.args:
@@ -121,8 +122,8 @@ def get_apartments():
             "description": apt.description,
             "city": apt.city,
             "state": apt.state,
-            "start_date": apt.start_date,
-            "end_date": apt.end_date,
+            "start_date": apt.start_date.strftime('%Y-%m-%d'),
+            "end_date": apt.end_date.strftime('%Y-%m-%d'),
             "address": apt.address,
             "sqft": apt.sqft,
             "phone": apt.phone,
@@ -140,6 +141,40 @@ def get_apartments():
     ]
 
     return jsonify(result)
+
+@app.route("/apartments/<int:id>", methods=['GET'])
+def get_apartment_by_id(id):
+    apartment = session.query(Apartment).filter(Apartment.id == id).first()
+    
+    if apartment is None:
+        return jsonify({"error": "Apartment not found"}), 404
+    
+    result = {
+        "id": apartment.id,
+        "bed": apartment.bed,
+        "bath": apartment.bath,
+        "cost": apartment.cost,
+        "description": apartment.description,
+        "city": apartment.city,
+        "state": apartment.state,
+        "start_date": apartment.start_date.strftime('%Y-%m-%d'),
+        "end_date": apartment.end_date.strftime('%Y-%m-%d'),
+        "address": apartment.address,
+        "sqft": apartment.sqft,
+        "phone": apartment.phone,
+        "email": apartment.email,
+        "url": apartment.url,
+        "gender": apartment.gender,
+        "shared": apartment.shared,
+        "furnished": apartment.furnished,
+        "pets": apartment.pets,
+        "parking": apartment.parking,
+        "laundry": apartment.laundry,
+        "image_urls": json.loads(apartment.image_urls)
+    }
+    
+    return jsonify(result)
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080, debug=True)

@@ -1,5 +1,4 @@
 DROP TABLE IF EXISTS apartments;
-
 CREATE TABLE apartments (
     id INTEGER PRIMARY KEY,
     bed INT NOT NULL,
