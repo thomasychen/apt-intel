@@ -2,6 +2,9 @@ import os
 from mistralai.client import MistralClient
 from mistralai.models.chat_completion import ChatMessage
 import json
+from dotenv import load_dotenv
+
+load_dotenv()
 
 api_key = os.environ["MISTRAL_API_KEY"]
 model = "mistral-large-latest"
