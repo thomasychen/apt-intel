@@ -6,7 +6,7 @@ from mistralai.client import MistralClient
 from mistralai.models.chat_completion import ChatMessage
 import boto3
 import datetime 
-# import requests
+import requests
 
 api_key = os.getenv("MISTRAL_API_KEY")
 model = "mistral-large-latest"
@@ -34,7 +34,7 @@ def lambda_handler(event, context):
     split_name = object_key.split("-")
     city = split_name[0]
     state = split_name[1]
-    print("got object fro s3")
+    print("got object from s3")
     print(city, state)
     file_content = response['Body'].read().decode('utf-8')
     har_parser = HarParser(json.loads(file_content))
@@ -60,18 +60,18 @@ def lambda_handler(event, context):
                     # Format the datetime object to a string in the format YYYY-MM-DD
                     date_str = dt_object.strftime('%Y-%m-%d')
 
-                    # new_image_urls = []
-                    # for url in image_urls:
-                    #     image_data = download_image(url)
-                    #     new_image_url = upload_to_s3(s3_client, image_data, new_bucket_name, generate_image_name(post_id, url))
-                    #     new_image_urls.append(new_image_url)
+                    new_image_urls = []
+                    for i, url in enumerate(image_urls):
+                        image_data = download_image(url)
+                        new_image_url = upload_to_s3(s3_client, image_data, "aptai-images-bucket", generate_image_name(post_id, i))
+                        new_image_urls.append(new_image_url)
 
                     posts.append({
                         'user': user,
                         'post_id': post_id,
                         'post_link': post_link,
                         'post_text': post_text,
-                        'image_urls': image_urls,
+                        'image_urls': new_image_urls,
                         'post_date': date_str,
                         'group_city':city,
                         'group_state':state,
@@ -105,7 +105,6 @@ def lambda_handler(event, context):
                 error_details = str(e)
                 print(error_details)
                 retries += 1
-    print(all_features)
 
     return {
         'statusCode': 200,
@@ -159,16 +158,16 @@ def extract_features(text, error_msg, default_city="Berkeley"):
     return response.choices[0].message.content
 
 def download_image(url):
-    response = requests.get(url)
+    response = requests.get(url, stream=True)
     if response.status_code == 200:
-        return response.content
+        return response
     return None
 
 def upload_to_s3(s3_client, image_data, bucket_name, object_name):
     if image_data is not None:
-        s3_client.put_object(Bucket=bucket_name, Key=object_name, Body=image_data, ACL='public-read')
+        s3_client.upload_fileobj(image_data.raw, bucket_name,object_name)
         return f"https://{bucket_name}.s3.amazonaws.com/{object_name}"
     return None
 
-def generate_image_name(post_id, url):
-    return f"{post_id}/{url.split('/')[-1]}"
+def generate_image_name(post_id, idx):
+    return f"{post_id}/{idx}.jpg"
