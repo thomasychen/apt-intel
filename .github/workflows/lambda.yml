@@ -10,16 +10,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
 
-      - name: Install dependencies
-        run: sudo apt-get install -y zip
+      - name: Install boto3
+        run: |
+          python -m pip install boto3
 
       - name: Combine Python file into ZIP
-        working-directory: lambda
         run: |
+          cd lambda
           zip -g lambda_function.zip lambda_function.py
+          cd ..
 
       - name: Upload to AWS Lambda
         env:
@@ -31,8 +37,8 @@ jobs:
           import boto3
           import os
 
-          lambda_client = boto3.client('lambda')
-          function_name = os.environ.get('apartmentProcessHarFiles2')
+          lambda_client = boto3.client('lambda', aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"), aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"), region_name=os.getenv("AWS_DEFAULT_REGION"))
+          function_name = 'apartmentProcessHarFiles2'
           zip_file_path = 'lambda/lambda_function.zip'
 
           with open(zip_file_path, 'rb') as f:
@@ -43,6 +49,5 @@ jobs:
           EOF
 
       - name: Clean up
-        working-directory: lambda
         run: |
-          git checkout lambda_function.zip  # Revert any changes to the ZIP file
+          git checkout lambda/lambda_function.zip  # Revert any changes to the ZIP file
