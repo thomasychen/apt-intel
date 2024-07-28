@@ -1,0 +1,48 @@
+name: Deploy to AWS Lambda
+
+on:
+  push:
+    branches:
+      - main  # Trigger on push to the main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: sudo apt-get install -y zip
+
+      - name: Combine Python file into ZIP
+        working-directory: lambda
+        run: |
+          zip -g lambda_function.zip lambda_function.py
+
+      - name: Upload to AWS Lambda
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          python - <<EOF
+          import boto3
+          import os
+
+          lambda_client = boto3.client('lambda')
+          function_name = os.environ.get('apartmentProcessHarFiles2')
+          zip_file_path = 'lambda/lambda_function.zip'
+
+          with open(zip_file_path, 'rb') as f:
+              lambda_client.update_function_code(
+                  FunctionName=function_name,
+                  ZipFile=f.read()
+              )
+          EOF
+
+      - name: Clean up
+        working-directory: lambda
+        run: |
+          git checkout lambda_function.zip  # Revert any changes to the ZIP file

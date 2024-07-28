@@ -12,6 +12,21 @@ api_key = os.getenv("MISTRAL_API_KEY")
 model = "mistral-large-latest"
 
 client = MistralClient(api_key=api_key)
+print("Connecting to DDB")
+ddb_name = os.getenv('DDB_NAME')
+access_id = os.getenv('USER_ACCESS_ID')
+secret_access_id = os.getenv('SECRET_USER_ACCESS_ID')
+region = os.getenv('REGION')
+
+dynamodb = boto3.resource(
+    'dynamodb',
+    region_name=region,
+    aws_access_key_id=access_id,
+    aws_secret_access_key=secret_access_id
+)
+
+table = dynamodb.Table(ddb_name) 
+print("Successful connection to DDB")
 
 def lambda_handler(event, context):
     '''Demonstrates a simple HTTP endpoint using API Gateway. You have full
@@ -100,6 +115,7 @@ def lambda_handler(event, context):
                     features['group_id'] = post['group_id']
                     features['url'] = f"https://facebook.com/groups/{features['group_id']}/permalink/{features['id']}/"
                     all_features.append(features)
+                    write_to_dynamodb(features)
                 valid = True
             except Exception as e:
                 error_details = str(e)
@@ -171,3 +187,11 @@ def upload_to_s3(s3_client, image_data, bucket_name, object_name):
 
 def generate_image_name(post_id, idx):
     return f"{post_id}/{idx}.jpg"
+
+def write_to_dynamodb(features):
+    try:
+        print("Putting Item...")
+        table.put_item(Item=features)
+        logging.info(f"Successfully inserted item with id {features['id']}")
+    except Exception as e:
+        logging.error(f"Error inserting item with id {features['id']}: {str(e)}")
