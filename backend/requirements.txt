@@ -1,3 +1,5 @@
 mistralai
 flask
-sqlalchemy
+boto3
+botocore
+flask-cors

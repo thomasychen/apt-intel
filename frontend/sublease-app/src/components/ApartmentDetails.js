@@ -8,11 +8,11 @@ import { Carousel } from 'react-responsive-carousel';
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
 
 const ApartmentDetails = () => {
-  const { id } = useParams();
+  const { city, id } = useParams();
   const [apartment, setApartment] = useState(null);
 
   useEffect(() => {
-    fetch(`http://localhost:8080/apartments/${id}`)
+    fetch(`http://localhost:8080/apartments/${city}/${id}`)
       .then(response => response.json())
       .then(data => setApartment(data))
       .catch(error => console.error('Error fetching data:', error));

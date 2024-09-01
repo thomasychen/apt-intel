@@ -239,7 +239,7 @@ const Home = () => {
             return (
               <Grid item key={apt.id} xs={12} sm={6} md={4}>
                 <Card>
-                  <CardActionArea component={Link} to={`/details/${apt.id}`}>
+                  <CardActionArea component={Link} to={`/details/${apt.city}/${apt.id}`}>
                     <Carousel showThumbs={false} infiniteLoop useKeyboardArrows dynamicHeight>
                       {apt.image_urls.map((url, index) => (
                         <div key={index}>

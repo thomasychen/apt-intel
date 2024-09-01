@@ -18,12 +18,7 @@ access_id = os.getenv('USER_ACCESS_ID')
 secret_access_id = os.getenv('SECRET_USER_ACCESS_ID')
 region = os.getenv('REGION')
 
-dynamodb = boto3.resource(
-    'dynamodb',
-    region_name=region,
-    aws_access_key_id=access_id,
-    aws_secret_access_key=secret_access_id
-)
+dynamodb = boto3.resource('dynamodb')
 
 table = dynamodb.Table(ddb_name) 
 print("Successful connection to DDB")
@@ -191,7 +186,7 @@ def generate_image_name(post_id, idx):
 def write_to_dynamodb(features):
     try:
         print("Putting Item...")
-        table.put_item(Item=features)
+        table.put_item(Item=features, ConditionExpression='attribute_not_exists(id)')
         logging.info(f"Successfully inserted item with id {features['id']}")
     except Exception as e:
         logging.error(f"Error inserting item with id {features['id']}: {str(e)}")
